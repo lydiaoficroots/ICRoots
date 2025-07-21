@@ -28,8 +28,8 @@ export interface BorrowerProfile {
 }
 
 class AIService {
-  private apiKey = process.env.REACT_APP_AI_API_KEY || 'demo-key';
-  private baseURL = process.env.REACT_APP_AI_API_URL || 'https://api.icroots.ai';
+  private apiKey = import.meta.env.VITE_AI_API_KEY || 'demo-key';
+  private baseURL = import.meta.env.VITE_AI_API_URL || 'https://api.icroots.ai';
 
   async assessBorrower(borrowerData: {
     amount: number;

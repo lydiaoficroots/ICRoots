@@ -18,7 +18,7 @@ class ICPService {
   private agent: HttpAgent | null = null;
   private authClient: AuthClient | null = null;
   private actor: ICPCanister | null = null;
-  private canisterId = process.env.REACT_APP_CANISTER_ID || 'rdmx6-jaaaa-aaaah-qdrqq-cai';
+  private canisterId = import.meta.env.VITE_CANISTER_ID || 'rdmx6-jaaaa-aaaah-qdrqq-cai';
 
   async initialize() {
     try {
@@ -26,13 +26,13 @@ class ICPService {
       
       // Create agent
       this.agent = new HttpAgent({
-        host: process.env.NODE_ENV === 'production' 
+        host: import.meta.env.PROD 
           ? 'https://ic0.app' 
           : 'http://localhost:8000'
       });
 
       // In development, fetch root key
-      if (process.env.NODE_ENV !== 'production') {
+      if (!import.meta.env.PROD) {
         await this.agent.fetchRootKey();
       }
 
@@ -84,9 +84,9 @@ class ICPService {
     
     return new Promise<boolean>((resolve) => {
       this.authClient?.login({
-        identityProvider: process.env.NODE_ENV === 'production' 
+        identityProvider: import.meta.env.PROD 
           ? 'https://identity.ic0.app' 
-          : `http://localhost:8000?canisterId=${process.env.REACT_APP_INTERNET_IDENTITY_CANISTER_ID}`,
+          : `http://localhost:8000?canisterId=${import.meta.env.VITE_INTERNET_IDENTITY_CANISTER_ID}`,
         onSuccess: () => resolve(true),
         onError: () => resolve(false),
       });
