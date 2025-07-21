@@ -11,7 +11,7 @@ interface AuthPageProps {
 const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack, loading, error }) => {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [selectedRole, setSelectedRole] = useState<'borrower' | 'lender' | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -24,7 +24,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack, loading, error }) =
     e.preventDefault();
     if (mode === 'signup' && !selectedRole) return;
     
-    setSubmitting(true);
+    setIsSubmitting(true);
     const role = mode === 'signin' ? 'borrower' : selectedRole!;
     
     try {
@@ -32,7 +32,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack, loading, error }) =
     } catch (error) {
       console.error('Authentication failed:', error);
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -46,19 +46,19 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack, loading, error }) =
         {/* Back Button */}
         <button
           onClick={onBack}
-          className="flex items-center text-dark-charcoal dark:text-light-grey hover:text-bitcoin-gold mb-8 transition-colors"
+          className="flex items-center text-light-grey hover:text-bitcoin-gold mb-8 transition-colors"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back to Home
         </button>
 
         {/* Auth Card */}
-        <div className="bg-white/80 dark:bg-dark-charcoal/80 backdrop-blur-sm rounded-2xl shadow-soft p-8">
+        <div className="bg-dark-charcoal/90 backdrop-blur-sm rounded-2xl shadow-soft p-8 border border-bitcoin-gold/20">
           <div className="text-center mb-8">
-            <h1 className="text-subheading font-medium text-dark-charcoal dark:text-white mb-2 uppercase">
+            <h1 className="text-subheading font-medium text-white mb-2 uppercase">
               {mode === 'signin' ? 'Welcome Back' : 'Join ICRoots'}
             </h1>
-            <p className="text-body text-dark-charcoal/70 dark:text-light-grey/70">
+            <p className="text-body text-light-grey/70">
               {mode === 'signin' ? 'Sign in to your account' : 'Create your account to get started'}
             </p>
           </div>
@@ -66,7 +66,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack, loading, error }) =
           {/* Role Selection for Signup */}
           {mode === 'signup' && (
             <div className="mb-6">
-              <label className="block text-body font-medium text-dark-charcoal dark:text-light-grey mb-3">
+              <label className="block text-body font-medium text-light-grey mb-3">
                 I want to:
               </label>
               <div className="grid grid-cols-2 gap-3">
@@ -132,12 +132,12 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack, loading, error }) =
             {mode === 'signup' && (
               <>
                 <div className="relative">
-                  <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-light-grey/50" size={18} />
                   <select
                     name="country"
                     value={formData.country}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-lg border border-bitcoin-gold/30 bg-dark-charcoal text-white focus:ring-2 focus:ring-bitcoin-gold focus:border-transparent transition-all"
                     required
                   >
                     <option value="">Select Country</option>
@@ -164,10 +164,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack, loading, error }) =
 
             <button
               type="submit"
-              disabled={(mode === 'signup' && !selectedRole) || submitting || loading}
+              disabled={(mode === 'signup' && !selectedRole) || isSubmitting || loading}
               className="w-full bg-primary hover:bg-primary/90 disabled:bg-dark-charcoal/50 text-bitcoin-gold py-3 rounded-xl font-medium uppercase transition-all duration-300 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed shadow-soft hover:shadow-glow flex items-center justify-center"
             >
-              {(submitting || loading) ? (
+              {(isSubmitting || loading) ? (
                 <div className="w-5 h-5 border-2 border-bitcoin-gold border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 mode === 'signin' ? 'Sign In' : 'Create Account'
@@ -177,7 +177,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack, loading, error }) =
 
           {/* Switch Mode */}
           <div className="text-center mt-6">
-            <p className="text-body text-dark-charcoal/70 dark:text-light-grey/70">
+            <p className="text-body text-light-grey/70">
               {mode === 'signin' ? "Don't have an account?" : 'Already have an account?'}
               <button
                 onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
@@ -191,7 +191,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack, loading, error }) =
           {/* Forgot Password */}
           {mode === 'signin' && (
             <div className="text-center mt-4">
-              <button className="text-caption text-dark-charcoal/60 dark:text-light-grey/60 hover:text-bitcoin-gold transition-colors">
+              <button className="text-caption text-light-grey/60 hover:text-bitcoin-gold transition-colors">
                 Forgot your password?
               </button>
             </div>
@@ -217,8 +217,8 @@ const RoleCard: React.FC<{
         : 'border-light-grey dark:border-dark-charcoal hover:border-bitcoin-gold/50'
     }`}
   >
-    <div className="font-medium text-dark-charcoal dark:text-white mb-1">{title}</div>
-    <div className="text-caption text-dark-charcoal/70 dark:text-light-grey/70">{description}</div>
+    <div className="font-medium text-white mb-1">{title}</div>
+    <div className="text-caption text-light-grey/70">{description}</div>
   </button>
 );
 
@@ -232,7 +232,7 @@ const InputField: React.FC<{
   required?: boolean;
 }> = ({ icon, type, name, placeholder, value, onChange, required }) => (
   <div className="relative">
-    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-charcoal/50 dark:text-light-grey/50">
+    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-light-grey/50">
       {icon}
     </div>
     <input
@@ -242,7 +242,7 @@ const InputField: React.FC<{
       value={value}
       onChange={onChange}
       required={required}
-      className="w-full pl-10 pr-4 py-3 rounded-lg border border-mint-green dark:border-dark-charcoal bg-white dark:bg-dark-charcoal text-dark-charcoal dark:text-white focus:ring-2 focus:ring-bitcoin-gold focus:border-transparent transition-all"
+      className="w-full pl-10 pr-4 py-3 rounded-lg border border-bitcoin-gold/30 bg-dark-charcoal text-white focus:ring-2 focus:ring-bitcoin-gold focus:border-transparent transition-all placeholder-light-grey/50"
     />
   </div>
 );

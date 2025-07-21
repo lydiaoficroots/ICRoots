@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   DollarSign, 
   TrendingUp, 
@@ -266,7 +267,6 @@ const LenderDashboard: React.FC<LenderDashboardProps> = ({ onLogout }) => {
               src="/ICRoots logo, no background.png" 
               alt="ICRoots Logo" 
               className="w-8 h-8"
-              style={{ filter: 'brightness(0) saturate(100%) invert(77%) sepia(85%) saturate(1352%) hue-rotate(359deg) brightness(95%) contrast(89%)' }}
             />
             <span className="text-xl font-bold text-gray-800 dark:text-white">ICRoots</span>
           </div>

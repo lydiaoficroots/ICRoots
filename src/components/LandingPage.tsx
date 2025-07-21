@@ -15,9 +15,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             src="/ICRoots logo, no background.png" 
             alt="ICRoots Logo" 
             className="w-10 h-10"
-            style={{ filter: 'brightness(0) saturate(100%) invert(77%) sepia(85%) saturate(1352%) hue-rotate(359deg) brightness(95%) contrast(89%)' }}
           />
-          <span className="text-2xl font-bold text-bitcoin-gold">
+          <span className="text-2xl font-bold text-bitcoin-gold drop-shadow-lg">
             ICRoots
           </span>
         </div>
