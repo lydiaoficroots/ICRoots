@@ -1,52 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import { Moon, Sun } from 'lucide-react';
 import LandingPage from './components/LandingPage';
 import AuthPage from './components/AuthPage';
 import BorrowerDashboard from './components/BorrowerDashboard';
 import LenderDashboard from './components/LenderDashboard';
+import { useICRoots } from './hooks/useICRoots';
 
-type Theme = 'light' | 'dark';
-type UserRole = 'borrower' | 'lender' | null;
 type Page = 'landing' | 'auth' | 'dashboard';
 
 function App() {
-  const [theme, setTheme] = useState<Theme>('light');
   const [currentPage, setCurrentPage] = useState<Page>('landing');
-  const [userRole, setUserRole] = useState<UserRole>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { user, login, logout, loading, error } = useICRoots();
 
   useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    // Always use dark mode
+    document.documentElement.classList.add('dark');
+  }, []);
+
+  const handleAuth = async (email: string, password: string, role: 'borrower' | 'lender') => {
+    const success = await login(email, password, role);
+    if (success) {
+      setCurrentPage('dashboard');
     }
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-  };
-
-  const handleAuth = (role: 'borrower' | 'lender') => {
-    setUserRole(role);
-    setIsAuthenticated(true);
-    setCurrentPage('dashboard');
+    return success;
   };
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
-    setUserRole(null);
+    logout();
     setCurrentPage('landing');
   };
 
   const renderPage = () => {
     switch (currentPage) {
       case 'auth':
-        return <AuthPage onAuth={handleAuth} onBack={() => setCurrentPage('landing')} />;
+        return (
+          <AuthPage 
+            onAuth={handleAuth} 
+            onBack={() => setCurrentPage('landing')}
+            loading={loading}
+            error={error}
+          />
+        );
       case 'dashboard':
-        if (userRole === 'borrower') {
+        if (user?.role === 'borrower') {
           return <BorrowerDashboard onLogout={handleLogout} />;
-        } else if (userRole === 'lender') {
+        } else if (user?.role === 'lender') {
           return <LenderDashboard onLogout={handleLogout} />;
         }
         return null;
@@ -56,23 +53,7 @@ function App() {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      theme === 'dark' 
-        ? 'bg-gradient-to-br from-primary via-dark-charcoal to-primary' 
-        : 'bg-gradient-to-br from-light-grey via-white to-mint-green/20'
-    }`}>
-      {/* Theme Toggle */}
-      <button
-        onClick={toggleTheme}
-        className={`fixed top-4 right-4 z-50 p-3 rounded-xl transition-all duration-300 ${
-          theme === 'dark'
-            ? 'bg-dark-charcoal text-bitcoin-gold hover:bg-primary'
-            : 'bg-white text-dark-charcoal hover:bg-light-grey'
-        } shadow-soft hover:shadow-glow`}
-      >
-        {theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
-      </button>
-
+    <div className="min-h-screen bg-gradient-to-br from-primary via-dark-charcoal to-primary">
       {renderPage()}
     </div>
   );

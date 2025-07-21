@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { ArrowLeft, Mail, Lock, User, Globe, Gift } from 'lucide-react';
 
 interface AuthPageProps {
-  onAuth: (role: 'borrower' | 'lender') => void;
+  onAuth: (email: string, password: string, role: 'borrower' | 'lender') => Promise<boolean>;
   onBack: () => void;
+  loading?: boolean;
+  error?: string | null;
 }
 
-const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack }) => {
+const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack, loading, error }) => {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [selectedRole, setSelectedRole] = useState<'borrower' | 'lender' | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -17,13 +20,20 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack }) => {
     referral: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (mode === 'signup' && !selectedRole) return;
     
-    // Mock authentication
+    setSubmitting(true);
     const role = mode === 'signin' ? 'borrower' : selectedRole!;
-    onAuth(role);
+    
+    try {
+      await onAuth(formData.email, formData.password, role);
+    } catch (error) {
+      console.error('Authentication failed:', error);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -75,6 +85,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack }) => {
                   onClick={() => setSelectedRole('lender')}
                 />
               </div>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="bg-risk-red/10 border border-risk-red/20 rounded-xl p-4 mb-4">
+              <p className="text-risk-red text-sm">{error}</p>
             </div>
           )}
 
@@ -147,10 +164,14 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack }) => {
 
             <button
               type="submit"
-              disabled={mode === 'signup' && !selectedRole}
-              className="w-full bg-primary hover:bg-primary/90 disabled:bg-dark-charcoal/50 text-bitcoin-gold py-3 rounded-xl font-medium uppercase transition-all duration-300 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed shadow-soft hover:shadow-glow"
+              disabled={(mode === 'signup' && !selectedRole) || submitting || loading}
+              className="w-full bg-primary hover:bg-primary/90 disabled:bg-dark-charcoal/50 text-bitcoin-gold py-3 rounded-xl font-medium uppercase transition-all duration-300 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed shadow-soft hover:shadow-glow flex items-center justify-center"
             >
-              {mode === 'signin' ? 'Sign In' : 'Create Account'}
+              {(submitting || loading) ? (
+                <div className="w-5 h-5 border-2 border-bitcoin-gold border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                mode === 'signin' ? 'Sign In' : 'Create Account'
+              )}
             </button>
           </form>
 

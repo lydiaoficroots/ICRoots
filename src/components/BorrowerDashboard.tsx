@@ -17,6 +17,7 @@ import TrustNFTDisplay from './TrustNFTDisplay';
 import BTCWallet from './BTCWallet';
 import LoanApplication from './LoanApplication';
 import LoanHistory from './LoanHistory';
+import { useICRoots } from '../hooks/useICRoots';
 
 interface BorrowerDashboardProps {
   onLogout: () => void;
@@ -25,20 +26,19 @@ interface BorrowerDashboardProps {
 const BorrowerDashboard: React.FC<BorrowerDashboardProps> = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { 
+    user, 
+    wallet, 
+    trustProfile, 
+    loans, 
+    loading,
+    refreshWallet,
+    submitLoanApplication,
+    refreshTrustProfile
+  } = useICRoots();
 
-  // Mock data
-  const borrowerData = {
-    name: "Alex Chen",
-    trustTier: "sapling",
-    btcBalance: 0.75,
-    usdValue: 31250,
-    aiScore: 85,
-    activeLoan: {
-      amount: 15000,
-      nextPayment: "2025-02-15",
-      remainingPayments: 8
-    }
-  };
+  const activeLoan = loans.find(loan => loan.status === 'active');
+  const aiScore = trustProfile?.score || 85;
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
@@ -51,13 +51,32 @@ const BorrowerDashboard: React.FC<BorrowerDashboardProps> = ({ onLogout }) => {
   const renderContent = () => {
     switch (activeTab) {
       case 'wallet':
-        return <BTCWallet balance={borrowerData.btcBalance} usdValue={borrowerData.usdValue} />;
+        return (
+          <BTCWallet 
+            balance={wallet?.balance || 0} 
+            usdValue={wallet?.usdValue || 0}
+            address={wallet?.address || ''}
+            onRefresh={refreshWallet}
+          />
+        );
       case 'apply':
-        return <LoanApplication aiScore={borrowerData.aiScore} />;
+        return (
+          <LoanApplication 
+            aiScore={aiScore}
+            onSubmit={submitLoanApplication}
+            loading={loading}
+          />
+        );
       case 'history':
-        return <LoanHistory />;
+        return <LoanHistory loans={loans} />;
       case 'trust':
-        return <TrustNFTDisplay tier={borrowerData.trustTier} />;
+        return (
+          <TrustNFTDisplay 
+            tier={trustProfile?.tier || 'sprout'}
+            profile={trustProfile}
+            onRefresh={refreshTrustProfile}
+          />
+        );
       default:
         return (
           <div className="space-y-6">
@@ -65,10 +84,10 @@ const BorrowerDashboard: React.FC<BorrowerDashboardProps> = ({ onLogout }) => {
             <div className="bg-gradient-to-r from-primary to-bitcoin-gold rounded-2xl p-6 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-subheading font-medium mb-2 uppercase">Welcome back, {borrowerData.name}!</h1>
+                  <h1 className="text-subheading font-medium mb-2 uppercase">Welcome back, {user?.name}!</h1>
                   <p className="opacity-90">Ready to unlock your Bitcoin's potential?</p>
                 </div>
-                <TrustNFTDisplay tier={borrowerData.trustTier} compact />
+                <TrustNFTDisplay tier={trustProfile?.tier || 'sprout'} compact />
               </div>
             </div>
 
@@ -77,28 +96,28 @@ const BorrowerDashboard: React.FC<BorrowerDashboardProps> = ({ onLogout }) => {
               <MetricCard
                 icon={<Bitcoin className="w-8 h-8 text-bitcoin-gold" />}
                 title="BTC Balance"
-                value={`${borrowerData.btcBalance} BTC`}
-                subtitle={`$${borrowerData.usdValue.toLocaleString()}`}
+                value={`${wallet?.balance.toFixed(4) || '0.0000'} BTC`}
+                subtitle={`$${wallet?.usdValue.toLocaleString() || '0'}`}
                 trend="+2.5%"
               />
               <MetricCard
                 icon={<TrendingUp className="w-8 h-8 text-mint-green" />}
                 title="AI Credit Score"
-                value={borrowerData.aiScore.toString()}
+                value={aiScore.toString()}
                 subtitle="Excellent standing"
                 trend="+5 pts"
               />
               <MetricCard
                 icon={<CheckCircle className="w-8 h-8 text-trust-blue" />}
                 title="Trust Tier"
-                value={borrowerData.trustTier.charAt(0).toUpperCase() + borrowerData.trustTier.slice(1)}
+                value={(trustProfile?.tier || 'sprout').charAt(0).toUpperCase() + (trustProfile?.tier || 'sprout').slice(1)}
                 subtitle="Growing steadily"
                 trend="Level up soon"
               />
             </div>
 
             {/* Active Loan */}
-            {borrowerData.activeLoan && (
+            {activeLoan && (
               <div className="bg-white/70 dark:bg-dark-charcoal/70 backdrop-blur-sm rounded-2xl p-6 shadow-soft">
                 <h3 className="text-lg font-medium mb-4 text-dark-charcoal dark:text-white flex items-center">
                   <Clock className="w-5 h-5 mr-2 text-trust-blue" />
@@ -108,27 +127,32 @@ const BorrowerDashboard: React.FC<BorrowerDashboardProps> = ({ onLogout }) => {
                   <div>
                     <p className="text-caption text-dark-charcoal/70 dark:text-light-grey/70">Loan Amount</p>
                     <p className="text-xl font-bold text-dark-charcoal dark:text-white">
-                      ${borrowerData.activeLoan.amount.toLocaleString()}
+                      ${activeLoan.amount.toLocaleString()}
                     </p>
                   </div>
                   <div>
                     <p className="text-caption text-dark-charcoal/70 dark:text-light-grey/70">Next Payment</p>
                     <p className="text-body font-medium text-dark-charcoal dark:text-white">
-                      {borrowerData.activeLoan.nextPayment}
+                      {activeLoan.nextPaymentDate ? new Date(activeLoan.nextPaymentDate).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
                   <div>
                     <p className="text-caption text-dark-charcoal/70 dark:text-light-grey/70">Remaining</p>
                     <p className="text-body font-medium text-dark-charcoal dark:text-white">
-                      {borrowerData.activeLoan.remainingPayments} payments
+                      {activeLoan.remainingPayments} payments
                     </p>
                   </div>
                 </div>
                 <div className="mt-4">
                   <div className="bg-light-grey dark:bg-dark-charcoal rounded-full h-2">
-                    <div className="bg-mint-green h-2 rounded-full" style={{ width: '60%' }}></div>
+                    <div 
+                      className="bg-mint-green h-2 rounded-full" 
+                      style={{ width: `${((activeLoan.term - activeLoan.remainingPayments) / activeLoan.term) * 100}%` }}
+                    ></div>
                   </div>
-                  <p className="text-caption text-dark-charcoal/70 dark:text-light-grey/70 mt-1">60% repaid</p>
+                  <p className="text-caption text-dark-charcoal/70 dark:text-light-grey/70 mt-1">
+                    {Math.round(((activeLoan.term - activeLoan.remainingPayments) / activeLoan.term) * 100)}% repaid
+                  </p>
                 </div>
               </div>
             )}
@@ -170,7 +194,12 @@ const BorrowerDashboard: React.FC<BorrowerDashboardProps> = ({ onLogout }) => {
       <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white/80 dark:bg-dark-charcoal/80 backdrop-blur-sm shadow-soft transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
         <div className="flex items-center justify-between p-6 border-b border-light-grey dark:border-dark-charcoal">
           <div className="flex items-center space-x-2">
-            <Bitcoin className="w-8 h-8 text-bitcoin-gold" />
+            <img 
+              src="/ICRoots logo, no background.png" 
+              alt="ICRoots Logo" 
+              className="w-8 h-8"
+              style={{ filter: 'brightness(0) saturate(100%) invert(77%) sepia(85%) saturate(1352%) hue-rotate(359deg) brightness(95%) contrast(89%)' }}
+            />
             <span className="text-xl font-bold text-dark-charcoal dark:text-white">ICRoots</span>
           </div>
           <button

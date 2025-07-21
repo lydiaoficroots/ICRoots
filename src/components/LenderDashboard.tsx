@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Download
 } from 'lucide-react';
+import { useICRoots } from '../hooks/useICRoots';
 
 interface LenderDashboardProps {
   onLogout: () => void;
@@ -21,47 +22,39 @@ interface LenderDashboardProps {
 const LenderDashboard: React.FC<LenderDashboardProps> = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { 
+    user, 
+    loans, 
+    loading,
+    getAIRecommendations,
+    fundLoan
+  } = useICRoots();
+  const [aiRecommendations, setAIRecommendations] = useState<any[]>([]);
 
-  // Mock data
-  const lenderData = {
-    name: "Sarah Martinez",
-    totalStaked: 125000,
-    loansFunded: 23,
-    averageROI: 12.5,
-    totalEarnings: 15625,
-    activeLoans: 8,
-    availableFunds: 45000
-  };
-
-  const aiSuggestedBorrowers = [
-    {
-      id: 1,
-      name: "Michael K.",
-      aiScore: 92,
-      requestedAmount: 25000,
-      trustTier: "branch",
-      riskLevel: "low",
-      collateralRatio: "150%"
-    },
-    {
-      id: 2,
-      name: "Jennifer L.",
-      aiScore: 88,
-      requestedAmount: 18000,
-      trustTier: "sapling",
-      riskLevel: "low",
-      collateralRatio: "160%"
-    },
-    {
-      id: 3,
-      name: "David R.",
-      aiScore: 85,
-      requestedAmount: 32000,
-      trustTier: "trunk",
-      riskLevel: "medium",
-      collateralRatio: "140%"
+  useEffect(() => {
+    const loadRecommendations = async () => {
+      const recommendations = await getAIRecommendations();
+      setAIRecommendations(recommendations);
+    };
+    
+    if (user?.role === 'lender') {
+      loadRecommendations();
     }
-  ];
+  }, [user, getAIRecommendations]);
+
+  // Calculate lender metrics
+  const lenderMetrics = {
+    totalStaked: loans.reduce((sum, loan) => sum + (loan.lenderId === user?.id ? loan.amount : 0), 0),
+    loansFunded: loans.filter(loan => loan.lenderId === user?.id).length,
+    activeLoans: loans.filter(loan => loan.lenderId === user?.id && loan.status === 'active').length,
+    totalEarnings: loans.reduce((sum, loan) => {
+      if (loan.lenderId === user?.id && loan.status === 'repaid') {
+        return sum + (loan.totalPaid - loan.amount);
+      }
+      return sum;
+    }, 0),
+    averageROI: 12.5 // This would be calculated based on actual returns
+  };
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
@@ -83,8 +76,13 @@ const LenderDashboard: React.FC<LenderDashboardProps> = ({ onLogout }) => {
             </div>
             
             <div className="grid gap-6">
-              {aiSuggestedBorrowers.map((borrower) => (
-                <BorrowerCard key={borrower.id} borrower={borrower} />
+              {aiRecommendations.map((borrower) => (
+                <BorrowerCard 
+                  key={borrower.id} 
+                  borrower={borrower} 
+                  onFund={fundLoan}
+                  loading={loading}
+                />
               ))}
             </div>
           </div>
@@ -107,30 +105,35 @@ const LenderDashboard: React.FC<LenderDashboardProps> = ({ onLogout }) => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    {loans.filter(loan => loan.lenderId === user?.id).map((loan) => (
+                      <tr key={loan.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-semibold">
-                              {String.fromCharCode(65 + i)}
+                              {loan.borrowerId.charAt(0).toUpperCase()}
                             </div>
                             <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900 dark:text-white">Anonymous User {i}</div>
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">Borrower {loan.borrowerId.slice(-4)}</div>
                               <div className="text-sm text-gray-500 dark:text-gray-300">Trust: Sapling</div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                          ${(15000 + i * 3000).toLocaleString()}
+                          ${loan.amount.toLocaleString()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                            <div className="bg-green-500 h-2 rounded-full" style={{ width: `${30 + i * 15}%` }}></div>
+                            <div 
+                              className="bg-green-500 h-2 rounded-full" 
+                              style={{ width: `${((loan.term - loan.remainingPayments) / loan.term) * 100}%` }}
+                            ></div>
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-300 mt-1">{30 + i * 15}%</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-300 mt-1">
+                            {Math.round(((loan.term - loan.remainingPayments) / loan.term) * 100)}%
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                          Feb {15 + i}, 2025
+                          {loan.nextPaymentDate ? new Date(loan.nextPaymentDate).toLocaleDateString() : 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
@@ -160,7 +163,7 @@ const LenderDashboard: React.FC<LenderDashboardProps> = ({ onLogout }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-3xl p-6 shadow-lg">
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Total Earnings</h3>
-                <div className="text-3xl font-bold text-green-500 mb-2">${lenderData.totalEarnings.toLocaleString()}</div>
+                <div className="text-3xl font-bold text-green-500 mb-2">${lenderMetrics.totalEarnings.toLocaleString()}</div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">+8.2% from last month</div>
               </div>
               
@@ -196,25 +199,25 @@ const LenderDashboard: React.FC<LenderDashboardProps> = ({ onLogout }) => {
               <MetricCard
                 icon={<DollarSign className="w-8 h-8 text-green-500" />}
                 title="Total Staked"
-                value={`$${lenderData.totalStaked.toLocaleString()}`}
+                value={`$${lenderMetrics.totalStaked.toLocaleString()}`}
                 trend="+12.5%"
               />
               <MetricCard
                 icon={<Users className="w-8 h-8 text-blue-500" />}
                 title="Loans Funded"
-                value={lenderData.loansFunded.toString()}
+                value={lenderMetrics.loansFunded.toString()}
                 trend="+3 this month"
               />
               <MetricCard
                 icon={<TrendingUp className="w-8 h-8 text-purple-500" />}
                 title="Average ROI"
-                value={`${lenderData.averageROI}%`}
+                value={`${lenderMetrics.averageROI}%`}
                 trend="+0.8%"
               />
               <MetricCard
                 icon={<Wallet className="w-8 h-8 text-orange-500" />}
                 title="Total Earnings"
-                value={`$${lenderData.totalEarnings.toLocaleString()}`}
+                value={`$${lenderMetrics.totalEarnings.toLocaleString()}`}
                 trend="+8.2%"
               />
             </div>
@@ -231,18 +234,18 @@ const LenderDashboard: React.FC<LenderDashboardProps> = ({ onLogout }) => {
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {aiSuggestedBorrowers.slice(0, 2).map((borrower) => (
+                {aiRecommendations.slice(0, 2).map((borrower) => (
                   <div key={borrower.id} className="border border-gray-200 dark:border-gray-600 rounded-2xl p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold text-gray-800 dark:text-white">{borrower.name}</span>
+                      <span className="font-semibold text-gray-800 dark:text-white">Borrower {borrower.borrowerId?.slice(-4) || 'Unknown'}</span>
                       <span className="text-sm bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full">
-                        {borrower.riskLevel} risk
+                        {borrower.riskLevel || 'low'} risk
                       </span>
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-                      <div>Amount: ${borrower.requestedAmount.toLocaleString()}</div>
-                      <div>AI Score: {borrower.aiScore}/100</div>
-                      <div>Collateral: {borrower.collateralRatio}</div>
+                      <div>Amount: ${borrower.amount?.toLocaleString() || 'N/A'}</div>
+                      <div>AI Score: {borrower.aiScore || 'N/A'}/100</div>
+                      <div>Interest: {borrower.interestRate?.toFixed(1) || 'N/A'}%</div>
                     </div>
                   </div>
                 ))}
@@ -259,7 +262,12 @@ const LenderDashboard: React.FC<LenderDashboardProps> = ({ onLogout }) => {
       <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-2">
-            <Bitcoin className="w-8 h-8 text-orange-500" />
+            <img 
+              src="/ICRoots logo, no background.png" 
+              alt="ICRoots Logo" 
+              className="w-8 h-8"
+              style={{ filter: 'brightness(0) saturate(100%) invert(77%) sepia(85%) saturate(1352%) hue-rotate(359deg) brightness(95%) contrast(89%)' }}
+            />
             <span className="text-xl font-bold text-gray-800 dark:text-white">ICRoots</span>
           </div>
           <button
@@ -350,27 +358,45 @@ const MetricCard: React.FC<{
   </div>
 );
 
-const BorrowerCard: React.FC<{ borrower: any }> = ({ borrower }) => (
+const BorrowerCard: React.FC<{ 
+  borrower: any; 
+  onFund: (loanId: string, amount: number) => Promise<boolean>;
+  loading: boolean;
+}> = ({ borrower, onFund, loading }) => {
+  const [funding, setFunding] = useState(false);
+
+  const handleFund = async (amount: number) => {
+    setFunding(true);
+    try {
+      await onFund(borrower.id, amount);
+    } finally {
+      setFunding(false);
+    }
+  };
+
+  return (
   <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-3xl p-6 shadow-lg">
     <div className="flex items-start justify-between mb-4">
       <div>
-        <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-1">{borrower.name}</h3>
+        <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-1">
+          Borrower {borrower.borrowerId?.slice(-4) || 'Unknown'}
+        </h3>
         <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300">
-          <span>AI Score: <strong>{borrower.aiScore}/100</strong></span>
+          <span>AI Score: <strong>{borrower.aiScore || 'N/A'}/100</strong></span>
           <span className="flex items-center">
             <Star className="w-4 h-4 text-yellow-400 mr-1" />
-            {borrower.trustTier}
+            sapling
           </span>
         </div>
       </div>
       <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-        borrower.riskLevel === 'low' 
+        (borrower.riskLevel || 'low') === 'low' 
           ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-          : borrower.riskLevel === 'medium'
+          : (borrower.riskLevel || 'low') === 'medium'
           ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
           : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
       }`}>
-        {borrower.riskLevel} risk
+        {borrower.riskLevel || 'low'} risk
       </span>
     </div>
     
@@ -378,24 +404,37 @@ const BorrowerCard: React.FC<{ borrower: any }> = ({ borrower }) => (
       <div>
         <p className="text-sm text-gray-600 dark:text-gray-300">Requested Amount</p>
         <p className="text-xl font-bold text-gray-800 dark:text-white">
-          ${borrower.requestedAmount.toLocaleString()}
+          ${borrower.amount?.toLocaleString() || 'N/A'}
         </p>
       </div>
       <div>
-        <p className="text-sm text-gray-600 dark:text-gray-300">Collateral Ratio</p>
-        <p className="text-xl font-bold text-gray-800 dark:text-white">{borrower.collateralRatio}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-300">Interest Rate</p>
+        <p className="text-xl font-bold text-gray-800 dark:text-white">{borrower.interestRate?.toFixed(1) || 'N/A'}%</p>
       </div>
     </div>
     
     <div className="flex space-x-3">
-      <button className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-full transition-colors">
-        Fund Full Amount
+      <button 
+        onClick={() => handleFund(borrower.amount)}
+        disabled={funding || loading}
+        className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white py-2 px-4 rounded-full transition-colors flex items-center justify-center"
+      >
+        {funding ? (
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        ) : (
+          'Fund Full Amount'
+        )}
       </button>
-      <button className="flex-1 border border-blue-500 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 py-2 px-4 rounded-full transition-colors">
+      <button 
+        onClick={() => handleFund(borrower.amount * 0.5)}
+        disabled={funding || loading}
+        className="flex-1 border border-blue-500 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 py-2 px-4 rounded-full transition-colors"
+      >
         Fund Partial
       </button>
     </div>
   </div>
-);
+  );
+};
 
 export default LenderDashboard;

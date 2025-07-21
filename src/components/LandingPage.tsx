@@ -11,19 +11,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       {/* Navigation */}
       <nav className="flex items-center justify-between p-6 max-w-7xl mx-auto">
         <div className="flex items-center space-x-2">
-          <Bitcoin className="w-8 h-8 text-bitcoin-gold" />
-          <span className="text-2xl font-bold bg-gradient-to-r from-primary to-bitcoin-gold bg-clip-text text-transparent">
+          <img 
+            src="/ICRoots logo, no background.png" 
+            alt="ICRoots Logo" 
+            className="w-10 h-10"
+            style={{ filter: 'brightness(0) saturate(100%) invert(77%) sepia(85%) saturate(1352%) hue-rotate(359deg) brightness(95%) contrast(89%)' }}
+          />
+          <span className="text-2xl font-bold text-bitcoin-gold">
             ICRoots
           </span>
         </div>
-        <div className="hidden md:flex space-x-8">
-          <a href="#how-it-works" className="text-dark-charcoal dark:text-light-grey hover:text-bitcoin-gold transition-colors">
+        <div className="hidden md:flex space-x-8 text-light-grey">
+          <a href="#how-it-works" className="hover:text-bitcoin-gold transition-colors">
             How It Works
           </a>
-          <a href="#why-icp" className="text-dark-charcoal dark:text-light-grey hover:text-bitcoin-gold transition-colors">
+          <a href="#why-icp" className="hover:text-bitcoin-gold transition-colors">
             Why ICP
           </a>
-          <a href="#testimonials" className="text-dark-charcoal dark:text-light-grey hover:text-bitcoin-gold transition-colors">
+          <a href="#testimonials" className="hover:text-bitcoin-gold transition-colors">
             Reviews
           </a>
         </div>
@@ -36,9 +41,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             Where Bitcoin
           </span>
           <br />
-          <span className="text-dark-charcoal dark:text-white">Backs You</span>
+          <span className="text-white">Backs You</span>
         </h1>
-        <p className="text-body md:text-xl text-dark-charcoal/80 dark:text-light-grey/80 mb-8 max-w-3xl mx-auto">
+        <p className="text-body md:text-xl text-light-grey/80 mb-8 max-w-3xl mx-auto">
           Powered by AI, Secured on ICP. The future of Bitcoin-backed lending is here.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -56,7 +61,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
       {/* How It Works */}
       <section id="how-it-works" className="py-20 px-6 max-w-7xl mx-auto">
-        <h2 className="text-subheading font-medium text-center mb-16 text-dark-charcoal dark:text-white uppercase">
+        <h2 className="text-subheading font-medium text-center mb-16 text-white uppercase">
           How ICRoots Works
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -85,8 +90,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
       {/* Why ICP & Bitcoin */}
       <section id="why-icp" className="py-20 px-6 bg-light-grey/50 dark:bg-dark-charcoal/50 backdrop-blur-sm">
+      <section id="why-icp" className="py-20 px-6 bg-dark-charcoal/50 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-subheading font-medium text-center mb-16 text-dark-charcoal dark:text-white uppercase">
+          <h2 className="text-subheading font-medium text-center mb-16 text-white uppercase">
             Why ICP & Bitcoin?
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
@@ -111,7 +117,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
       {/* Testimonials */}
       <section id="testimonials" className="py-20 px-6 max-w-6xl mx-auto">
-        <h2 className="text-subheading font-medium text-center mb-16 text-dark-charcoal dark:text-white uppercase">
+        <h2 className="text-subheading font-medium text-center mb-16 text-white uppercase">
           What Our Users Say
         </h2>
         <div className="grid md:grid-cols-3 gap-8">
@@ -141,7 +147,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
         <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <Bitcoin className="w-6 h-6 text-bitcoin-gold" />
+              <img 
+                src="/ICRoots logo, no background.png" 
+                alt="ICRoots Logo" 
+                className="w-8 h-8"
+                style={{ filter: 'brightness(0) saturate(100%) invert(77%) sepia(85%) saturate(1352%) hue-rotate(359deg) brightness(95%) contrast(89%)' }}
+              />
               <span className="text-xl font-bold">ICRoots</span>
             </div>
             <p className="text-light-grey/70">Where Bitcoin Backs You</p>
@@ -180,32 +191,32 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 };
 
 const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; description: string }> = ({ icon, title, description }) => (
-  <div className="text-center p-6 rounded-2xl bg-white/70 dark:bg-dark-charcoal/70 backdrop-blur-sm shadow-soft hover:shadow-glow transition-all duration-300 transform hover:-translate-y-2">
+  <div className="text-center p-6 rounded-2xl bg-dark-charcoal/70 backdrop-blur-sm shadow-soft hover:shadow-glow transition-all duration-300 transform hover:-translate-y-2">
     <div className="flex justify-center mb-4">{icon}</div>
-    <h3 className="text-lg font-medium mb-2 text-dark-charcoal dark:text-white">{title}</h3>
-    <p className="text-body text-dark-charcoal/70 dark:text-light-grey/70">{description}</p>
+    <h3 className="text-lg font-medium mb-2 text-white">{title}</h3>
+    <p className="text-body text-light-grey/70">{description}</p>
   </div>
 );
 
 const BenefitCard: React.FC<{ icon: React.ReactNode; title: string; description: string }> = ({ icon, title, description }) => (
-  <div className="text-center p-8 rounded-2xl bg-white/70 dark:bg-dark-charcoal/70 backdrop-blur-sm shadow-soft">
+  <div className="text-center p-8 rounded-2xl bg-dark-charcoal/70 backdrop-blur-sm shadow-soft">
     <div className="flex justify-center mb-4">{icon}</div>
-    <h3 className="text-lg font-medium mb-4 text-dark-charcoal dark:text-white">{title}</h3>
-    <p className="text-body text-dark-charcoal/70 dark:text-light-grey/70">{description}</p>
+    <h3 className="text-lg font-medium mb-4 text-white">{title}</h3>
+    <p className="text-body text-light-grey/70">{description}</p>
   </div>
 );
 
 const TestimonialCard: React.FC<{ quote: string; author: string; role: string; rating: number }> = ({ quote, author, role, rating }) => (
-  <div className="p-6 rounded-2xl bg-white/70 dark:bg-dark-charcoal/70 backdrop-blur-sm shadow-soft">
+  <div className="p-6 rounded-2xl bg-dark-charcoal/70 backdrop-blur-sm shadow-soft">
     <div className="flex mb-4">
       {[...Array(rating)].map((_, i) => (
         <Star key={i} className="w-5 h-5 text-bitcoin-gold fill-current" />
       ))}
     </div>
-    <p className="text-dark-charcoal/80 dark:text-light-grey/80 mb-4 italic text-body">"{quote}"</p>
+    <p className="text-light-grey/80 mb-4 italic text-body">"{quote}"</p>
     <div>
-      <p className="font-medium text-dark-charcoal dark:text-white">{author}</p>
-      <p className="text-caption text-dark-charcoal/60 dark:text-light-grey/60">{role}</p>
+      <p className="font-medium text-white">{author}</p>
+      <p className="text-caption text-light-grey/60">{role}</p>
     </div>
   </div>
 );
