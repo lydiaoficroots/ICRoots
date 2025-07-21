@@ -89,7 +89,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       </section>
 
       {/* Why ICP & Bitcoin */}
-      <section id="why-icp" className="py-20 px-6 bg-light-grey/50 dark:bg-dark-charcoal/50 backdrop-blur-sm">
       <section id="why-icp" className="py-20 px-6 bg-dark-charcoal/50 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-subheading font-medium text-center mb-16 text-white uppercase">
