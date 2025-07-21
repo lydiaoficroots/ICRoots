@@ -113,7 +113,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
           </div>
         </div>
       </section>
-      </section>
 
       {/* Testimonials */}
       <section id="testimonials" className="py-20 px-6 max-w-6xl mx-auto">
