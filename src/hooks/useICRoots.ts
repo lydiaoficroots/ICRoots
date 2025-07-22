@@ -24,15 +24,12 @@ export const useICRoots = () => {
   // Initialize services
   useEffect(() => {
     const initializeServices = async () => {
-      setLoading(true);
       try {
         await icpService.initialize();
         await walletService.updateBTCPrice();
       } catch (error) {
         console.error('Failed to initialize services:', error);
-        setError('Failed to initialize application');
-      } finally {
-        setLoading(false);
+        // Don't set error state for initialization failures
       }
     };
 

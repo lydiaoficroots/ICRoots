@@ -2,16 +2,15 @@ import React, { useState } from 'react';
 import { ArrowLeft, Mail, Lock, User, Globe, Gift } from 'lucide-react';
 
 interface AuthPageProps {
-  onAuth: (email: string, password: string, role: 'borrower' | 'lender') => Promise<boolean>;
+  onAuth: (email: string, password: string, role: 'borrower' | 'lender') => Promise<void>;
   onBack: () => void;
-  loading?: boolean;
-  error?: string | null;
 }
 
-const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack, loading, error }) => {
+const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack }) => {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [selectedRole, setSelectedRole] = useState<'borrower' | 'lender' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -25,12 +24,14 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack, loading, error }) =
     if (mode === 'signup' && !selectedRole) return;
     
     setIsSubmitting(true);
+    setError(null);
     const role = mode === 'signin' ? 'borrower' : selectedRole!;
     
     try {
       await onAuth(formData.email, formData.password, role);
     } catch (error) {
       console.error('Authentication failed:', error);
+      setError('Authentication failed. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -164,10 +165,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuth, onBack, loading, error }) =
 
             <button
               type="submit"
-              disabled={(mode === 'signup' && !selectedRole) || isSubmitting || loading}
+              disabled={(mode === 'signup' && !selectedRole) || isSubmitting}
               className="w-full bg-primary hover:bg-primary/90 disabled:bg-dark-charcoal/50 text-bitcoin-gold py-3 rounded-xl font-medium uppercase transition-all duration-300 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed shadow-soft hover:shadow-glow flex items-center justify-center"
             >
-              {(isSubmitting || loading) ? (
+              {isSubmitting ? (
                 <div className="w-5 h-5 border-2 border-bitcoin-gold border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 mode === 'signin' ? 'Sign In' : 'Create Account'

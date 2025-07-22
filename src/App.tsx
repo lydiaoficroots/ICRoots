@@ -21,7 +21,6 @@ function App() {
     if (success) {
       setCurrentPage('dashboard');
     }
-    return success;
   };
 
   const handleLogout = () => {
@@ -36,8 +35,6 @@ function App() {
           <AuthPage 
             onAuth={handleAuth} 
             onBack={() => setCurrentPage('landing')}
-            loading={loading}
-            error={error}
           />
         );
       case 'dashboard':
