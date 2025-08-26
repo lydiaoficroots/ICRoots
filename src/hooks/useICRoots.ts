@@ -227,7 +227,8 @@ export const useICRoots = () => {
     if (!user || user.role !== 'lender') return [];
     
     try {
-      return await loanService.getRecommendedBorrowers(user.id);
+      const recommendations = await loanService.getRecommendedBorrowers(user.id);
+      return recommendations;
     } catch (error) {
       console.error('Failed to get AI recommendations:', error);
       return [];

@@ -276,7 +276,10 @@ class LoanService {
         totalPaid: 0,
         monthlyPayment: 0,
         documents: [],
-        repaymentHistory: []
+        repaymentHistory: [],
+        borrowerName: borrower.name,
+        trustTier: borrower.trustTier,
+        collateralRatio: borrower.collateralRatio
       }));
     } catch (error) {
       console.error('Failed to get recommended borrowers:', error);
