@@ -10,11 +10,6 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/icp/, '')
-      },
-      '/api/coindesk': {
-        target: 'https://api.coindesk.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/coindesk/, '')
       }
     }
   },

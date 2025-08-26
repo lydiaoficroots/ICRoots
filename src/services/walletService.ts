@@ -199,7 +199,7 @@ class WalletService {
   async updateBTCPrice(): Promise<number> {
     try {
       // In production, fetch from a real API
-      const response = await fetch('/api/coindesk/v1/bpi/currentprice.json');
+      const response = await fetch('https://api.coindesk.com/v1/bpi/currentprice.json');
       const data = await response.json();
       this.btcPrice = parseFloat(data.bpi.USD.rate.replace(',', ''));
       return this.btcPrice;
