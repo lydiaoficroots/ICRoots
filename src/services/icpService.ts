@@ -92,15 +92,33 @@ class ICPService {
   async login() {
     if (!this.authClient) await this.initialize();
     
-    return new Promise<boolean>((resolve) => {
-      this.authClient?.login({
-        identityProvider: import.meta.env.PROD 
-          ? 'https://identity.ic0.app' 
-          : `http://localhost:8000?canisterId=${import.meta.env.VITE_INTERNET_IDENTITY_CANISTER_ID}`,
-        onSuccess: () => resolve(true),
-        onError: () => resolve(false),
+    try {
+      return new Promise<boolean>((resolve, reject) => {
+        if (!this.authClient) {
+          resolve(false);
+          return;
+        }
+
+        this.authClient.login({
+          identityProvider: import.meta.env.PROD 
+            ? 'https://identity.ic0.app' 
+            : 'https://identity.ic0.app', // Always use production II for demo
+          maxTimeToLive: BigInt(7 * 24 * 60 * 60 * 1000 * 1000 * 1000), // 7 days
+          windowOpenerFeatures: 'toolbar=0,location=0,menubar=0,width=500,height=500,left=100,top=100',
+          onSuccess: () => {
+            console.log('Internet Identity login successful');
+            resolve(true);
+          },
+          onError: (error) => {
+            console.error('Internet Identity login failed:', error);
+            resolve(false);
+          },
+        });
       });
-    });
+    } catch (error) {
+      console.error('Internet Identity login error:', error);
+      return false;
+    }
   }
 
   async logout() {
